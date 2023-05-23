@@ -12,6 +12,7 @@ from ChatCompletion import chatCompletion
 
 class Engine:
     def __init__(self):
+        self.api_key = "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"
         self.model = "gpt-3.5-turbo"
         self.temp_file_path = "contexts/Temporary.json"
         self.contexts_dir = "contexts"
@@ -31,7 +32,6 @@ class Engine:
             cash.write("")
 
 
-
     def submit_message(self, output, input,temp,tokens):
         
         request = input.toPlainText()
@@ -40,19 +40,19 @@ class Engine:
         request_data = {'role': 'user', 'content': request}
         self._add_to_json_file(self.temp_file_path, request_data)
         request_file_path = self.temp_file_path
-        self.response_thread = chatCompletion(request_file_path,temp=temp,maxtkns=tokens)
-        self.response_thread.responseChanged.connect(lambda response: self._update_output(response, output))
+        self.response_thread = chatCompletion(request_file_path,temp=temp,maxtkns=tokens,destination=output)
+        #self.response_thread.responseChanged.connect(lambda response: self._update_output(response, output))
         self.response_thread.start()
 
 
 
     def _update_output(self, response, output):
-       if response==" \n \n ERREUR LORS DE LA COMPLETION ESSAYEZ RENVOYER LE MESSAGE SI LE PROBLÉME PERSISTE VERIFIEZ 'ETAT DE LA CONNECTION ET REDEMARREZ L'APPLICATION ":
-            output.append("\n" + "\n" + "Betsy: " + response)
+       if self.response_thread.answer==" \n \n ERREUR LORS DE LA COMPLETION ESSAYEZ RENVOYER LE MESSAGE SI LE PROBLÉME PERSISTE VERIFIEZ 'ETAT DE LA CONNECTION ET REDEMARREZ L'APPLICATION ":
+            output.append("\n" + "\n" + "Betsy: " + self.response_thread.answer)
        else:
-            response_data = {'role': 'assistant', 'content': response}
+            response_data = {'role': 'assistant', 'content': self.response_thread.answer}
             self._add_to_json_file(self.temp_file_path, response_data)
-            output.append("\n" + "\n" + "Betsy: " + response)
+            
 
 
 
@@ -81,7 +81,7 @@ class Engine:
         output.clear()
         system.setEnabled(False)
         with open(self.temp_file_path, "w") as f:
-            json.dump([{"role": "system", "content": "sarcastic assistant"}], f)
+            json.dump([{"role": "system", "content": " Sarcastic assistant !"}], f)
         self._galimatia(system=system)
 
     def _galimatia(self, system):
@@ -195,7 +195,7 @@ class EnregistrerDialog():
         contextname = self.lineEdit.text()
         if contextname!="":
             print("saving...")
-            with open("BetsyApp/contexts/"+contextname+".json","w") as savings:
+            with open("contexts/"+contextname+".json","w") as savings:
                 json.dump(sett,savings)
                 print("saved !")
                 self.dial.close()

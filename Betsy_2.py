@@ -46,6 +46,7 @@ class BetsyGUI(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.chatlog = QtWidgets.QTextEdit(self.widget)
         self.chatlog.setObjectName("chatlog")
+        self.chatlog.setReadOnly(True)
         self.verticalLayout.addWidget(self.chatlog)
         spacerItem = QtWidgets.QSpacerItem(34, 54, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         self.verticalLayout.addItem(spacerItem)

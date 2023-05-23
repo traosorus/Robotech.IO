@@ -8,7 +8,7 @@ import sys
 import numpy as np
 
 class Transcriber():
-    def __init__(self,durationdisplayer):
+    def __init__(self):
      
 
         # set the name of the output file
@@ -25,12 +25,12 @@ class Transcriber():
 
         # create the widgets
        
-        self.label = durationdisplayer
+        
       
    
 
         
-        self.label.setText("Trés bien un instant s'il vous plait")
+        self.beep(900,500)
         self.start_recording()
 
 
@@ -53,6 +53,7 @@ class Transcriber():
             self.frames.append(data)
 
         # stop recording
+        self.beep(900,500)
         self.stream.stop_stream()
         self.stream.close()
         self.audio.terminate()
@@ -80,8 +81,8 @@ class Transcriber():
         openai.api_key = API_key
         audio_file = open(self.output_file, "rb")
         self.transcript = openai.Audio.transcribe("whisper-1", audio_file)
-        self.label.setText("Trés bien vérifiez si j'ai bien noté votre requête avant de l'envoyer")
         self.transcript = self.transcript.text
+        print(self.transcript)
     
     def beep(self,frequency, duration):
         p = pyaudio.PyAudio()

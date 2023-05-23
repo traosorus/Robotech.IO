@@ -8,16 +8,17 @@ class chatCompletion(QThread):
     responseChanged = pyqtSignal(str)
     with open("API_key.txt","r") as key:
         API_key = key.read() 
-
-    def __init__(self, context, maxtkns,temp):
+    def __init__(self, context, maxtkns,temp, destination):
         super().__init__()
         self.context = context
         self.tokens = maxtkns
         self.temp = temp
-        self._response = None
-
+        self.destination = destination
+        destination.append("\nBetsy: ")
+        self.chunk_message = None
+        self.answer = ""
     def run(self):
-        with open("BetsyApp/API_key.txt","r") as key:
+        with open("API_key.txt","r") as key:
             API_key = key.read() 
             print(API_key)
         openai.api_key = API_key
@@ -30,16 +31,20 @@ class chatCompletion(QThread):
             max_tokens=self.tokens,
             stream = True
             )
-        
         for chunk in completion:
             try:
-                chunk_message = chunk['choices'][0]['delta']['content']
-                print(chunk_message)
+                self.chunk_message = chunk['choices'][0]['delta']['content']
+                # move the cursor to the end of the text
+                cursor = self.destination.textCursor()
+                cursor.movePosition(cursor.End)
+
+                # insert the new word
+                cursor.insertText(self.chunk_message)
+                self.answer = self.answer + str(self.chunk_message)              
             except:
-                pass
-        self.responseChanged.emit(self._response)
+                self.answer = " \n \n ERREUR LORS DE LA COMPLETION ESSAYEZ RENVOYER LE MESSAGE SI LE PROBLÉME PERSISTE VERIFIEZ 'ETAT DE LA CONNECTION ET REDEMARREZ L'APPLICATION "
 
-
+        self.responseChanged.emit(self.chunk_message)
     @property
     def response(self):
-        return self._response
+        return self.chunk_message
