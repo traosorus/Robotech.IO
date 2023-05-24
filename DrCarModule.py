@@ -4,6 +4,8 @@ import wave
 import threading
 import time
 import openai
+from elevenlabs import clone, generate, stream
+from elevenlabs import set_api_key
 
 
 
@@ -76,6 +78,8 @@ class Application(tk.Tk):
             self.recorder.save_recording("enregistrement.wav")  # Sauvegarde l'enregistrement dans un fichier WAV
             self.is_recording = False
             Ts = Transcriber("enregistrement.wav")
+            req=[{"role": "system", "content": "Assistant sarcastic specialiste du football. "},{"role": "user", "content": Ts.transcript}]
+            self.ChatCompletion(request=req)
             self.record_button.config(text="Enregistrer")
 
     def update_duration(self):
@@ -83,55 +87,42 @@ class Application(tk.Tk):
             duration = time.time() - self.start_time
             self.duration_label.config(text=f"Durée d'enregistrement: {duration:.1f}s")
             self.after(100, self.update_duration)  # Planifie la prochaine mise à jour après 100 ms
+    
+        
+    def discord(self,value):
+        set_api_key("1ef66a6800a311364098d15abe21bb50")
+
+        audio_stream = generate(
+            text=value,
+            voice="Arnold",
+            model='eleven_multilingual_v1',
+            stream=True
+        )
+        stream(audio_stream)
+
+    def ChatCompletion(self,request):
+        openai.api_key = "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"
+        
+        response = openai.ChatCompletion.create(
+            model='gpt-3.5-turbo',
+            messages=request,
+            temperature=0.7,
+        )
+        self.discord(response['choices'][0]['message']['content'])
+
+
+
 
 class Transcriber:
     def __init__(self,request):
                 # transcribe the audio using OpenAI
-        with open("API_key.txt","r") as key:
-            API_key = key.read() 
-        openai.api_key = API_key
+        openai.api_key = "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"
         audio_file = open(request, "rb")
         self.transcript = openai.Audio.transcribe("whisper-1", audio_file)
         self.transcript = self.transcript.text
         print(self.transcript)
-        
-def discord(self,value):
-    from elevenlabs import clone , generate, stream
-    from elevenlabs import set_api_key
 
-    set_api_key("1ef66a6800a311364098d15abe21bb50")
-
-    audio_stream = generate(
-    text=value,
-    voice="Arnold",
-    model='eleven_multilingual_v1',
-    stream=True
-    )
-    stream(audio_stream)
+app = Application()
+app.mainloop()
         
 
-def ChatCompletion(self,request):
-    with open("API_key.txt","r") as key:
-        API_key = key.read() 
-        print(API_key)
-    openai.api_key = API_key
-    
-    toplay=""
-    response = openai.ChatCompletion.create(
-        model='gpt-3.5-turbo',
-        messages=request,
-        temperature=0.7,
-        stream=True  
-    )
-
-    for chunk in response:
-      
-        chunk_message = chunk['choices'][0]['delta']['content']
-        toplay= toplay+chunk_message
-      
-        print(chunk_message)
-    
-        
-ChatCompletion([
-        {'role': 'user', 'content': "1000 words about leucemia."}
-    ])
